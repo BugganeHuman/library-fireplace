@@ -45,30 +45,107 @@ while (true)
             string action_menu_choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .HighlightStyle(new Style(Color.GreenYellow))
-                    .AddChoices("\n  Show all books", "Select one book",
+                    .AddChoices("\n  Show all books", "Find books",
                                 "Update", "Delete", "Back"));
             if (action_menu_choice == "Back") { break; }
 
             else if (action_menu_choice == "\n  Show all books")
             {
                 List<BookDTO> allBooks = BookRepository.GetAllBooks();
-
-                var table = new Table();
-                table.ShowRowSeparators();
-                table.AddColumns("ID", "Created At", "Name", "Author",
-                    "Year of publication", "Language of book text", "Genre");
-
-                foreach (BookDTO book in allBooks)
-                {
-                    table.AddRow(book.Id.ToString(), book.CreatedAt, book.Name,
-                                 book.Author, book.YearOfPublication.ToString(),
-                                 book.LanguageOfBookText, book.Genre);
-                }
-                AnsiConsole.Write(table);
+                ShowTableOFBooks(allBooks);
+            }
+            else if (action_menu_choice == "Find books") //can accept only Latin characters
+            {
+                int? id = AnsiConsole.Prompt(
+                    new TextPrompt<int?>("\nID, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                string? name = AnsiConsole.Prompt(
+                    new TextPrompt<string?>("Name, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                string? author = AnsiConsole.Prompt(
+                    new TextPrompt<string?>("Author, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                int? yearOfPublication = AnsiConsole.Prompt(
+                    new TextPrompt<int?>("Year of publiacation, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                string? languageOfBookText = AnsiConsole.Prompt(
+                    new TextPrompt<string?>("Language of book text, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                string? genre = AnsiConsole.Prompt(
+                    new TextPrompt<string?>("Genre, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                List<BookDTO> foundBooks = BookRepository.FindBooks(id, name, author,
+                                        yearOfPublication, languageOfBookText, genre);
+                ShowTableOFBooks(foundBooks);
             }
 
-        }
-                
-    }
+            else if (action_menu_choice == "Update")
+            {
+                int id = AnsiConsole.Ask<int>("id of book: ");
+                string? name = AnsiConsole.Prompt(
+                    new TextPrompt<string?>("Name to update, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                string? author = AnsiConsole.Prompt(
+                    new TextPrompt<string?>("Author, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                int? yearOfPublication = AnsiConsole.Prompt(
+                    new TextPrompt<int?>("Year of publiacation, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                string? languageOfBookText = AnsiConsole.Prompt(
+                    new TextPrompt<string?>("Language of book text," +
+                    " or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                string? genre = AnsiConsole.Prompt(
+                    new TextPrompt<string?>("Genre, or Enter to skip: ")
+                    .DefaultValue(null)
+                    .HideDefaultValue());
+                int updatedRows = BookRepository.UpdateBook(id, name, author,
+                                yearOfPublication, languageOfBookText, genre);
+                AnsiConsole.MarkupLine("\n[green]DONE[/]");
+                AnsiConsole.MarkupLine($"[green]UPDATED {updatedRows} BOOKS[/]\n");
+            }
 
+            else if (action_menu_choice == "Delete")
+            {
+                int id = AnsiConsole.Ask<int>("id of book: ");
+                bool isSure = AnsiConsole.Confirm("Are you sure?", false);
+                if (isSure)
+                {
+                    bool isDeleted = BookRepository.DeleteBook(id);
+                    if (isDeleted) { AnsiConsole.MarkupLine("\n[green]DONE[/]\n"); }
+                    else { AnsiConsole.MarkupLine("\n[orange1]DONE, NOTHING DELETED[/]\n"); }
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("\n[red]REJECTED[/]\n");
+                }
+            }
+        }     
+    }
+}
+
+static void ShowTableOFBooks (List<BookDTO> books)
+{
+    var table = new Table();
+    table.ShowRowSeparators();
+    table.AddColumns("ID", "Created At", "Name", "Author",
+        "Year of publication", "Language of book text", "Genre");
+
+    foreach (BookDTO book in books)
+    {
+        table.AddRow(book.Id.ToString(), book.CreatedAt, book.Name,
+                     book.Author, book.YearOfPublication.ToString(),
+                     book.LanguageOfBookText, book.Genre);
+    }
+    AnsiConsole.Write(table);
 }
