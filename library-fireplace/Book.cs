@@ -7,6 +7,9 @@ public class Book
     public int YearOfPublication { get; set; }
     public string LanguageOfBookText { get; set; }
     public string Genre { get; set; }
+    public bool IsLent { get; set; } = false;
+    public int? Borrower { get; set; } = null;
+    public DateTime? DueDate { get; set; } = null;
     
     public Book (string name, string author, int yearOfPublication,
                  string languageOfBookText, string genre)

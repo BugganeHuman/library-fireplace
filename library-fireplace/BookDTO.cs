@@ -7,5 +7,8 @@ public record BookDTO(
     string Author,
     int YearOfPublication,
     string LanguageOfBookText,
-    string Genre
+    string Genre,
+    bool IsLent = false,
+    int? Borower = null,
+    string? DueDate  = null
     );

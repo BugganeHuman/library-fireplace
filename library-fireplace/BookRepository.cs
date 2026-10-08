@@ -40,7 +40,10 @@ public static class BookRepository
                     reader.GetString(3),
                     reader.GetInt32(4),
                     reader.GetString(5),
-                    reader.GetString(6)
+                    reader.GetString(6),
+                    reader.GetBoolean(7),
+                    reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                    reader.IsDBNull(9) ? null : reader.GetString(9) 
                     ));
         }
         return books;
@@ -80,7 +83,10 @@ public static class BookRepository
                     reader.GetString(3),
                     reader.GetInt32(4),
                     reader.GetString(5),
-                    reader.GetString(6)
+                    reader.GetString(6),
+                    reader.GetBoolean(7),
+                    reader.GetInt32(8),
+                    reader.GetString(9)
                 ));
         }
         return found_books;
@@ -126,6 +132,24 @@ public static class BookRepository
         int deletedBooks = cmd.ExecuteNonQuery();
         bool isDeleted = deletedBooks > 0;
         return isDeleted;
+    }
+
+    public static void LendBook(int bookID, int readerID)
+    {
+        using var connection = DbContext.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            UPDATE books SET 
+            is_lent = $is_lent,
+            borrower = $borrower,
+            due_date = $due_date
+            WHERE id = $id
+            """;
+        cmd.Parameters.AddWithValue("$is_lent", true);
+        cmd.Parameters.AddWithValue("$borrower", readerID);
+        cmd.Parameters.AddWithValue("$id", bookID);
+        cmd.Parameters.AddWithValue("$due_date", DateTime.Now.AddDays(21).ToString("dd.MM.yyyy"));
+        cmd.ExecuteNonQuery();
     }
 
 

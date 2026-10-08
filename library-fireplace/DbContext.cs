@@ -22,7 +22,11 @@ public static class DbContext
                 author TEXT,
                 year_of_publication INTEGER,
                 language_of_book_text TEXT,
-                genre TEXT
+                genre TEXT,
+                is_lent BOOL DEFAULT FALSE,
+                borrower INTEGER DEFAULT NULL,
+                due_date TEXT DEFAULT NULL,
+                FOREIGN KEY (borrower) REFERENCES readers(id)
             );
 
             CREATE TABLE IF NOT EXISTS readers (

@@ -16,6 +16,14 @@ while (true)
             .AddChoices("Books", "Lend a Book", "Readers", "Escape"));
     if (main_menu_choice == "Escape") { break; }
 
+    else if (main_menu_choice == "Lend a Book")
+    {
+        int bookID = AnsiConsole.Ask<int>("Book ID: ");
+        int readerID = AnsiConsole.Ask<int>("Reader ID: ");
+        BookRepository.LendBook(bookID, readerID);
+        AnsiConsole.MarkupLine("\n[green]DONE[/]\n");
+    }
+
     else if (main_menu_choice == "Books")
     {
         while (true)
@@ -173,14 +181,16 @@ static void ShowTableOFBooks (List<BookDTO> books)
 {
     var table = new Table();
     table.ShowRowSeparators();
-    table.AddColumns("ID", "Created At", "Name", "Author",
-        "Year of publication", "Language of book text", "Genre");
+    table.AddColumns("ID", "Created At", "Name", "Author","Year of publication",
+                     "Language of book text", "Genre", "Is Lent",
+                     "Borrower", "Due Date");
 
     foreach (BookDTO book in books)
     {
-        table.AddRow(book.Id.ToString(), book.CreatedAt, book.Name,
-                     book.Author, book.YearOfPublication.ToString(),
-                     book.LanguageOfBookText, book.Genre);
+        table.AddRow(book.Id.ToString(), book.CreatedAt, book.Name, book.Author,
+                     book.YearOfPublication.ToString(), book.LanguageOfBookText,
+                     book.Genre, book.IsLent.ToString(), book.Borower.ToString() ?? "None",
+                     book.DueDate ?? "None");
     }
     AnsiConsole.Write(table);
 }
