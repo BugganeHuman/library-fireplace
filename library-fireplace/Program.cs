@@ -1,60 +1,63 @@
 ﻿using Spectre.Console;
 using LibraryFireplace;
+using System.ComponentModel.Design;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.InputEncoding = System.Text.Encoding.UTF8;
 
 Console.WriteLine("Welcome, it's panel of Library Fireplace\n");
-BookRepository.Start();
+DbContext.Start();
 
 while (true)
 {
     string main_menu_choice = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
             .HighlightStyle(new Style(Color.DarkOrange))
-            .AddChoices("Add Book", "Actions with Books", "Escape"));
+            .AddChoices("Books", "Lend a Book", "Readers", "Escape"));
     if (main_menu_choice == "Escape") { break; }
 
-    else if (main_menu_choice == "Add Book")
-    {
-        string name = AnsiConsole.Prompt(
-            new TextPrompt<string>("\nBook's name: ")
-            );
-        string author = AnsiConsole.Prompt(
-            new TextPrompt<string>("\nAuthor: ")
-            );
-        int yearOfPublication = AnsiConsole.Prompt(
-            new TextPrompt<int>("\nYear of publication: ")
-            );
-        string languageOfBookText = AnsiConsole.Prompt(
-            new TextPrompt<string>("Language of book text: ")
-            );
-        string genre = AnsiConsole.Prompt(
-            new TextPrompt<string>("\nGenre of book: ")
-            );
-        Book new_book = new Book(name, author, yearOfPublication,
-                             languageOfBookText, genre);
-        BookRepository.AddBook(new_book);
-        AnsiConsole.MarkupLine("\n[green]DONE[/]\n");
-    }
-
-    else if (main_menu_choice == "Actions with Books")
+    else if (main_menu_choice == "Books")
     {
         while (true)
         {
-            string action_menu_choice = AnsiConsole.Prompt(
+            string book_menu_choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .HighlightStyle(new Style(Color.GreenYellow))
-                    .AddChoices("\n  Show all books", "Find books",
+                    .AddChoices("\n  Show all books", "Add Book", "Find books",
                                 "Update", "Delete", "Back"));
-            if (action_menu_choice == "Back") { break; }
+            if (book_menu_choice == "Back") { break; }
 
-            else if (action_menu_choice == "\n  Show all books")
+            else if (book_menu_choice == "\n  Show all books")
             {
                 List<BookDTO> allBooks = BookRepository.GetAllBooks();
                 ShowTableOFBooks(allBooks);
             }
-            else if (action_menu_choice == "Find books") //can accept only Latin characters
+
+            else if (book_menu_choice == "Add Book")
+            {
+                string name = AnsiConsole.Prompt(
+                    new TextPrompt<string>("\nBook's name: ")
+                    );
+                string author = AnsiConsole.Prompt(
+                    new TextPrompt<string>("\nAuthor: ")
+                    );
+                int yearOfPublication = AnsiConsole.Prompt(
+                    new TextPrompt<int>("\nYear of publication: ")
+                    );
+                string languageOfBookText = AnsiConsole.Prompt(
+                    new TextPrompt<string>("Language of book text: ")
+                    );
+                string genre = AnsiConsole.Prompt(
+                    new TextPrompt<string>("\nGenre of book: ")
+                    );
+                Book new_book = new Book(name, author, yearOfPublication,
+                                     languageOfBookText, genre);
+                BookRepository.AddBook(new_book);
+                AnsiConsole.MarkupLine("\n[green]DONE[/]\n");
+            }
+
+
+            else if (book_menu_choice == "Find books") //can accept only Latin characters
             {
                 int? id = AnsiConsole.Prompt(
                     new TextPrompt<int?>("\nID, or Enter to skip: ")
@@ -85,7 +88,7 @@ while (true)
                 ShowTableOFBooks(foundBooks);
             }
 
-            else if (action_menu_choice == "Update")
+            else if (book_menu_choice == "Update")
             {
                 int id = AnsiConsole.Ask<int>("id of book: ");
                 string? name = AnsiConsole.Prompt(
@@ -115,7 +118,7 @@ while (true)
                 AnsiConsole.MarkupLine($"[green]UPDATED {updatedRows} BOOKS[/]\n");
             }
 
-            else if (action_menu_choice == "Delete")
+            else if (book_menu_choice == "Delete")
             {
                 int id = AnsiConsole.Ask<int>("id of book: ");
                 bool isSure = AnsiConsole.Confirm("Are you sure?", false);
@@ -132,6 +135,38 @@ while (true)
             }
         }     
     }
+
+    else if (main_menu_choice == "Readers")
+    {
+        while(true)
+        {
+            string reader_menu_choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .HighlightStyle(new Style(Color.IndianRed1))
+                    .AddChoices("\n  Show all readers", "Add Reader", "Find readers",
+                                "Update", "Delete", "Back"));
+            if (reader_menu_choice == "Back") { break; }
+
+            else if (reader_menu_choice == "\n  Show all readers")
+            {
+                List<ReaderDTO> allReaders = ReaderRepository.GetAllReaders();
+                ShowTableOfReaders(allReaders);
+            }
+
+            else if (reader_menu_choice == "Add Reader")
+            {
+                string firstName = AnsiConsole.Ask<string>("First Name: ");
+                string lastName = AnsiConsole.Ask<string>("Last Name: ");
+                long phoneNumber = AnsiConsole.Ask<long>("Phone Number: ");
+                string citizenship = AnsiConsole.Ask<string>("Citizenship: ");
+                long personalID = AnsiConsole.Ask<long>("Personal ID: ");
+                ReaderRepository.AddReader(new Reader (firstName, lastName, phoneNumber, citizenship, personalID));
+                AnsiConsole.MarkupLine("\n[green]DONE[/]\n");
+            }
+
+
+        }
+    }
 }
 
 static void ShowTableOFBooks (List<BookDTO> books)
@@ -146,6 +181,21 @@ static void ShowTableOFBooks (List<BookDTO> books)
         table.AddRow(book.Id.ToString(), book.CreatedAt, book.Name,
                      book.Author, book.YearOfPublication.ToString(),
                      book.LanguageOfBookText, book.Genre);
+    }
+    AnsiConsole.Write(table);
+}
+
+static void ShowTableOfReaders (List<ReaderDTO> readers)
+{
+    var table = new Table();
+    table.ShowRowSeparators();
+    table.AddColumns("ID", "Created At", "First Name", "Last Name",
+    "Phone Number", "Citizenship", "Personal ID");
+    foreach (ReaderDTO reader in readers)
+    {
+        table.AddRow(reader.ID.ToString(), reader.CreatedAt, reader.FirstName,
+                     reader.LastName, reader.PhoneNumber.ToString(),
+                     reader.Citizenship, reader.PersonalID.ToString());
     }
     AnsiConsole.Write(table);
 }
