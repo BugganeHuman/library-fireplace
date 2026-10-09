@@ -45,4 +45,43 @@ public static class ReaderRepository
         }
         return allReaders;
     }
+
+    public static List<ReaderDTO> FindReaders (int? id, string? firstName,
+                                                string? lastName, long? phoneNumber,
+                                                string? citizenship, long? personalID)
+    {
+        using var connection = DbContext.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT * FROM readers WHERE
+            id = COALESCE ($id, id)
+            AND LOWER(first_name) = COALESCE (LOWER($first_name), LOWER(first_name))
+            AND LOWER(last_name) = COALESCE (LOWER($last_name), LOWER(last_name))
+            AND phone_number = COALESCE($phone_number, phone_number)
+            AND LOWER(citizenship) = COALESCE (LOWER($citizenship), LOWER(citizenship))
+            AND personal_id = COALESCE ($personal_id, personal_id)
+            """;
+        cmd.Parameters.AddWithValue("$id", (object?)id ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$first_name", (object?)firstName ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$last_name", (object?)lastName ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$phone_number", (object?)phoneNumber ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$citizenship", (object?)citizenship ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$personal_id", (object?)personalID ?? DBNull.Value);
+        using var reader = cmd.ExecuteReader();
+        List<ReaderDTO> foundReaders = [];
+        while (reader.Read())
+        {
+            foundReaders.Add(new ReaderDTO(
+                reader.GetInt32(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetInt64(4),
+                reader.GetString(5),
+                reader.GetInt64(6)
+                ));
+        }
+        return foundReaders;
+
+    }
 }

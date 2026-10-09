@@ -1,6 +1,7 @@
 ﻿using Spectre.Console;
 using LibraryFireplace;
 using System.ComponentModel.Design;
+using System.Net;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.InputEncoding = System.Text.Encoding.UTF8;
@@ -151,7 +152,7 @@ while (true)
             string reader_menu_choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .HighlightStyle(new Style(Color.IndianRed1))
-                    .AddChoices("\n  Show all readers", "Add Reader", "Find readers",
+                    .AddChoices("\n  Show all readers", "Add Reader", "Find Readers",
                                 "Update", "Delete", "Back"));
             if (reader_menu_choice == "Back") { break; }
 
@@ -170,6 +171,37 @@ while (true)
                 long personalID = AnsiConsole.Ask<long>("Personal ID: ");
                 ReaderRepository.AddReader(new Reader (firstName, lastName, phoneNumber, citizenship, personalID));
                 AnsiConsole.MarkupLine("\n[green]DONE[/]\n");
+            }
+
+            else if (reader_menu_choice == "Find Readers")
+            {
+                int? id = AnsiConsole.Prompt(
+                   new TextPrompt<int?>("\nID, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                string? firstName = AnsiConsole.Prompt(
+                   new TextPrompt<string?>("First Name, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                string? lastName = AnsiConsole.Prompt(
+                   new TextPrompt<string?>("Last Name, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                long? phoneNumber = AnsiConsole.Prompt(
+                   new TextPrompt<long?>("Phone Number, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                string? citizenship = AnsiConsole.Prompt(
+                   new TextPrompt<string?>("Citizenship, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                long? personalID = AnsiConsole.Prompt(
+                   new TextPrompt<long?>("Personal ID, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                List<ReaderDTO> foundReaders = ReaderRepository.FindReaders(id, firstName,
+                                            lastName, phoneNumber, citizenship, personalID);
+                ShowTableOfReaders(foundReaders);
             }
 
 
