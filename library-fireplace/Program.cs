@@ -14,7 +14,7 @@ while (true)
     string main_menu_choice = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
             .HighlightStyle(new Style(Color.DarkOrange))
-            .AddChoices("Books", "Lend a Book", "Readers", "Escape"));
+            .AddChoices("Books", "Lend a Book", "Return a Book", "Readers", "Escape"));
     if (main_menu_choice == "Escape") { break; }
 
     else if (main_menu_choice == "Lend a Book")
@@ -22,6 +22,13 @@ while (true)
         int bookID = AnsiConsole.Ask<int>("Book ID: ");
         int readerID = AnsiConsole.Ask<int>("Reader ID: ");
         BookRepository.LendBook(bookID, readerID);
+        AnsiConsole.MarkupLine("\n[green]DONE[/]\n");
+    }
+
+    else if (main_menu_choice == "Return a Book")
+    {
+        int bookID = AnsiConsole.Ask<int>("Book ID: ");
+        BookRepository.ReturnBook(bookID);
         AnsiConsole.MarkupLine("\n[green]DONE[/]\n");
     }
 
@@ -92,6 +99,7 @@ while (true)
                     new TextPrompt<string?>("Genre, or Enter to skip: ")
                     .DefaultValue(null)
                     .HideDefaultValue());
+
                 List<BookDTO> foundBooks = BookRepository.FindBooks(id, name, author,
                                         yearOfPublication, languageOfBookText, genre);
                 ShowTableOFBooks(foundBooks);
@@ -169,7 +177,8 @@ while (true)
                 long phoneNumber = AnsiConsole.Ask<long>("Phone Number: ");
                 string citizenship = AnsiConsole.Ask<string>("Citizenship: ");
                 long personalID = AnsiConsole.Ask<long>("Personal ID: ");
-                ReaderRepository.AddReader(new Reader (firstName, lastName, phoneNumber, citizenship, personalID));
+                ReaderRepository.AddReader(new Reader (firstName, lastName, phoneNumber,
+                                                        citizenship, personalID));
                 AnsiConsole.MarkupLine("\n[green]DONE[/]\n");
             }
 
@@ -204,6 +213,51 @@ while (true)
                 ShowTableOfReaders(foundReaders);
             }
 
+            else if (reader_menu_choice == "Delete")
+            {
+
+                int id = AnsiConsole.Ask<int>("id of Reader: ");
+                bool isSure = AnsiConsole.Confirm("Are you sure?", false);
+                if (isSure)
+                {
+                    bool isDeleted = ReaderRepository.DeleteReader(id);
+                    if (isDeleted) { AnsiConsole.MarkupLine("\n[green]DONE[/]\n"); }
+                    else { AnsiConsole.MarkupLine("\n[orange1]DONE, NOTHING DELETED[/]\n"); }
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("\n[red]REJECTED[/]\n");
+                }
+            }
+
+            else if (reader_menu_choice == "Update")
+            {
+                int id = AnsiConsole.Ask<int>("Reader ID: ");
+                string? firstName = AnsiConsole.Prompt(
+                   new TextPrompt<string?>("First Name, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                string? lastName = AnsiConsole.Prompt(
+                   new TextPrompt<string?>("Last Name, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                long? phoneNumber = AnsiConsole.Prompt(
+                   new TextPrompt<long?>("Phone Number, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                string? citizenship = AnsiConsole.Prompt(
+                   new TextPrompt<string?>("Citizenship, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                long? personalID = AnsiConsole.Prompt(
+                   new TextPrompt<long?>("Personal ID, or Enter to skip: ")
+                   .DefaultValue(null)
+                   .HideDefaultValue());
+                bool isUpdated = ReaderRepository.UpdateReader(id, firstName, lastName,
+                                                   phoneNumber, citizenship, personalID);
+                if (isUpdated) { AnsiConsole.MarkupLine("\n[green]DONE[/]\n"); }
+                else { AnsiConsole.MarkupLine("\n[orange1]DONE, NOTHING UPDATED[/]\n"); }
+            }
 
         }
     }

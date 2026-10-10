@@ -84,4 +84,44 @@ public static class ReaderRepository
         return foundReaders;
 
     }
+
+    public static bool UpdateReader(int id, string? firstName,
+                                string? lastName, long? phoneNumber,
+                                string? citizenship, long? personalID)
+    {
+        using var connection = DbContext.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            UPDATE readers SET
+            first_name = COALESCE ($first_name, first_name),
+            last_name = COALESCE ($last_name, last_name),
+            phone_number = COALESCE ($phone_number, phone_number),
+            citizenship = COALESCE ($citizenship, citizenship),
+            personal_id = COALESCE ($personal_id, personal_id)
+            WHERE id = $id
+            """;
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$first_name", (object?)firstName ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$last_name", (object?)lastName ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$phone_number", (object?)phoneNumber ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$citizenship", (object?)citizenship ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$personal_id", (object?)personalID ?? DBNull.Value);
+        int stringsUpdated = cmd.ExecuteNonQuery();
+        bool isUpdated = stringsUpdated > 0;
+        return isUpdated;
+    }
+
+    public static bool DeleteReader(int id)
+    {
+        using var connection = DbContext.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            DELETE FROM readers WHERE id = $id
+            """;
+        cmd.Parameters.AddWithValue("$id", id);
+        int deletedReaders = cmd.ExecuteNonQuery();
+        bool isDeleted = deletedReaders > 0;
+        return isDeleted;
+    }
+
 }

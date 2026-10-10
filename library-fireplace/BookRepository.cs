@@ -73,10 +73,10 @@ public static class BookRepository
                                     (object?)languageOfBookText ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$genre", (object?)genre ?? DBNull.Value);
         using var reader = cmd.ExecuteReader();
-        List<BookDTO> found_books = [];
+        List<BookDTO> foundBooks = [];
         while (reader.Read())
         {
-            found_books.Add(new BookDTO(
+            foundBooks.Add(new BookDTO(
                     reader.GetInt32(0),
                     reader.GetString(1),
                     reader.GetString(2),
@@ -85,11 +85,11 @@ public static class BookRepository
                     reader.GetString(5),
                     reader.GetString(6),
                     reader.GetBoolean(7),
-                    reader.GetInt32(8),
-                    reader.GetString(9)
+                    reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                    reader.IsDBNull(9) ? null : reader.GetString(9)
                 ));
         }
-        return found_books;
+        return foundBooks;
     }
 
     public static int UpdateBook(int id, string? name = null, string? author = null,
@@ -152,5 +152,20 @@ public static class BookRepository
         cmd.ExecuteNonQuery();
     }
 
-
+    public static bool ReturnBook(int bookID)
+    {
+        using var connection = DbContext.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+         UPDATE books SET 
+         is_lent = 0,
+         borrower = NULL,
+         due_date = 'None'
+         WHERE id = $id
+         """;
+        cmd.Parameters.AddWithValue("$id", bookID);
+        int updatedBooks = cmd.ExecuteNonQuery();
+        bool isUpdated = updatedBooks > 0;
+        return isUpdated;
+    }
 }
